@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tic-Tac-Toe</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #87CEFA;
+            font-family: Arial, sans-serif;
+            position: relative;
+            margin: 0;
+            overflow: hidden;
+            touch-action: none;
+        }
+        canvas {
+            border: 2px solid black;
+            border-radius: 20px;
+            touch-action: none;
+            width: 90vw;
+            max-width: 300px;
+            height: auto;
+        }
+        #winnerContainer {
+            display: none;
+            position: absolute;
+            top: 57%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            width: 60%;
+            max-width: 200px;
+            z-index: 2;
+        }
+        #winnerMessage {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #newGameButton, #restartButton {
+            margin-top: 5px;
+            padding: 5px 10px;
+            font-size: 20px;
+            background-color: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 5px;
+        }
+        #restartButton {
+            height: 36px;
+            width: 117px;
+            margin-top: 15px;
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tic-Tac-Toe</h1>
+    <h6>KingHs Suthar</h6>
+    <canvas id="gameCanvas" width="300" height="300"></canvas>
+    <div id="winnerContainer">
+        <div id="winnerMessage"></div>
+        <button id="newGameButton" onclick="resetGame()">New Game</button>
+    </div>
+    <button id="restartButton" onclick="resetGame()">Restart</button>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const cellSize = canvas.width / 3;
+        let board = Array(9).fill("");
+        let currentPlayer = "X";
+        
+        function drawBoard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 1; i < 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * cellSize, 0);
+                ctx.lineTo(i * cellSize, canvas.height);
+                ctx.moveTo(0, i * cellSize);
+                ctx.lineTo(canvas.width, i * cellSize);
+                ctx.stroke();
+            }
+            board.forEach((mark, index) => {
+                if (mark) {
+                    const x = (index % 3) * cellSize + cellSize / 2;
+                    const y = Math.floor(index / 3) * cellSize + cellSize / 2;
+                    const fontSize = cellSize * 0.6;
+                    ctx.font = `${fontSize}px Arial`;
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(mark, x, y);
+                }
+            });
+        }
+        
+        function drawWinningLine(a, b, c) {
+            ctx.beginPath();
+            ctx.moveTo((a % 3 + 0.5) * cellSize, (Math.floor(a / 3) + 0.5) * cellSize);
+            ctx.lineTo((c % 3 + 0.5) * cellSize, (Math.floor(c / 3) + 0.5) * cellSize);
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = "red";
+            ctx.stroke();
+        }
+        
+        function checkWinner() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            for (const pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    drawWinningLine(a, b, c);
+                    setTimeout(() => {
+                        document.getElementById("winnerMessage").textContent = `${board[a]} Wins!`;
+                        document.getElementById("winnerContainer").style.display = "block";
+                    }, 500);
+                    canvas.removeEventListener("click", handleClick);
+                    return;
+                }
+            }
+            if (!board.includes("")) {
+                document.getElementById("winnerMessage").textContent = "It's a draw!";
+                document.getElementById("winnerContainer").style.display = "block";
+            }
+        }
+        
+        function resetGame() {
+            board.fill("");
+            currentPlayer = "X";
+            document.getElementById("winnerContainer").style.display = "none";
+            drawBoard();
+            canvas.addEventListener("click", handleClick);
+        }
+        
+        function handleClick(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const index = Math.floor(x / cellSize) + Math.floor(y / cellSize) * 3;
+            if (!board[index]) {
+                board[index] = currentPlayer;
+                currentPlayer = currentPlayer === "X" ? "O" : "X";
+                drawBoard();
+                checkWinner();
+            }
+        }
+        
+        canvas.addEventListener("click", handleClick);
+        drawBoard();
+    </script>
+</body>
+</html>
